@@ -1,5 +1,2 @@
 /node_modules
 .idea
-
-git config --global user.email "cyganov0206@gmail.com"
-git config --global user.name "VicWrest"

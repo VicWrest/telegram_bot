@@ -1,33 +1,39 @@
+const user = require('./models/models');
+
 class Service {
     chats = {}; //аналогия бд
-    results = {}
     async getRandomNumber(chatId) {
         const randomNumber = Math.floor(Math.random() * 10);
         this.chats[chatId] = randomNumber;
         return randomNumber;
     }
     async checkAnswer(chatId, data){
-        if(!this.results[chatId]) this.createResult(chatId);
+        let result;
+        const gamer = await user.findOne({chatId});
         if(this.chats[chatId] == data){
-            this.results[chatId].correct += 1
-            return true;
+            gamer.right += 1
+            result = true;
         }
         else{
-            this.results[chatId].incorrect += 1
-            return false;
+            result = false;
+            gamer.wrong += 1;
         }
-    };
-    async createResult(chatId){
-        this.results[chatId] = {correct: 0, incorrect: 0}
-        return;
+        await gamer.save();
+        return result;
     };
     async info(chatId){
-        const results = this.results[chatId];
-        if(results === undefined){
-            return `Здесь будет отображен результат игр. Начните игру конопкой "game"`;
-        }
-        const {correct, incorrect} = results;
-        return `Твой результат ${correct}: правильных ответов, ${incorrect} неправильных ответов`;
+         const result = await user.findOne({chatId});
+         if(!result){
+            return `Пользователь не найден. Введите команду "/start", чтобы зарегистрироваться.`
+         }
+         return `Твой результат ${result.dataValues.right}: правильных ответов, ${result.dataValues.wrong} неправильных ответов`;
+    }
+    async createUser(chatId){
+        const candidate = await user.findOne({chatId});
+        if(!candidate){
+            await user.create({chatId});
+        };
+        return;
     }
 
 }
